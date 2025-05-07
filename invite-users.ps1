@@ -1,4 +1,20 @@
-$users = import-csv invitations.csv
+# Define folders
+$inputFolder = "C:\Path\To\InputCSVs"
+$processedFolder = "C:\Path\To\ProcessedCSVs"
+
+# Ensure processed folder exists
+if (-not (Test-Path -Path $processedFolder)) {
+    Write-Host "Processed folder doesn't exist you donkey"
+}
+
+# Check if the Microsoft.Graph module is available
+if (-not (Get-Module -ListAvailable -Name Microsoft.Graph)) {
+    Write-Host "Microsoft.Graph module not found. Installing..."
+    Install-Module -Name Microsoft.Graph -Scope CurrentUser -Force
+}
+
+# Import the module (just in case it's not auto-loaded)
+Import-Module Microsoft.Graph
 
 Connect-MgGraph -Scopes "User.Invite.All"
 
@@ -12,25 +28,8 @@ foreach ($user in $users) {
         $existingUser = Get-MgUser -Filter "Mail eq '$($user.Email)'" -ConsistencyLevel eventual -CountVariable count
 
         if ($existingUser) {
-            $guest = $existingUser[0]
-            if ($guest.UserType -eq "Guest") {
-                Write-Host "⏩ Skipping: $($user.FullName) already invited."
-
-                # Optional: Show invite status
-                $state = $guest.ExternalUserState
-                $when = $guest.ExternalUserStateChangeDateTime
-                Write-Host "  📥 Invite State: $state"
-                if ($state -eq "Accepted") {
-                    Write-Host "  ✅ Accepted on: $when"
-                } elseif ($state -eq "PendingAcceptance") {
-                    Write-Host "  🕒 Pending since: $($guest.CreatedDateTime)"
-                }
-
-                continue
-            } else {
-                Write-Host "⚠️ $($user.FullName) exists. Skipping." -ForegroundColor Yellow
-                continue
-            }
+            Write-Host "⚠️ $($user.FullName) exists. Skipping." -ForegroundColor Yellow
+            continue
         }
 
         # Step 2: Send invite
