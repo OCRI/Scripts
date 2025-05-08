@@ -13,7 +13,7 @@ Get-ChildItem -Path $inputFolder -Filter *.xlsx | ForEach-Object {
     $csvPath = ($_.FullName -replace '\.xlsx$', '.csv')
     $workbook.SaveAs($csvPath, 6)  # 6 = xlCSV
     $workbook.Close($false)
-    Write-Host "📝 Converted $($_.Name) to CSV."
+    Write-Host "Converted $($_.Name) to CSV."
 }
 
 $excel.Quit()
@@ -45,7 +45,7 @@ $redirectUrl = "https://ocr.uc.edu"
 Get-ChildItem -Path $inputFolder -Filter *.csv | ForEach-Object {
     $csvFile = $_.FullName
     $fileName = $_.Name
-    Write-Host "📄 Processing $fileName..."
+    Write-Host "Processing $fileName..."
 
     $users = Import-Csv $csvFile
 
@@ -54,7 +54,7 @@ Get-ChildItem -Path $inputFolder -Filter *.csv | ForEach-Object {
             # Step 1: Check if user already exists
             $existingUser = Get-MgUser -Filter "Mail eq '$($user.EMAIL)'" -ConsistencyLevel eventual -CountVariable count
             if ($existingUser) {
-                Write-Host "⚠️ $($user.F_NAME) $($user.L_NAME) exists. Skipping." -ForegroundColor Yellow
+                Write-Host "$($user.F_NAME) $($user.L_NAME) exists. Skipping." -ForegroundColor Yellow
                 continue
             }
 
@@ -69,23 +69,23 @@ Get-ChildItem -Path $inputFolder -Filter *.csv | ForEach-Object {
 If this invite has expired, please contact your professor to resubmit an access request."
                                        }
 
-            Write-Host "✔️ Invited: $($user.EMAIL)"
+            Write-Host "Invited: $($user.EMAIL)"
 
             # Step 3: Update names
             $invitedUserId = $invite.InvitedUser.Id
             if ($invitedUserId) {
                 Update-MgUser -UserId $invitedUserId -GivenName $user.F_NAME -Surname $user.L_NAME
-                Write-Host "🔄 Updated name: $($user.F_NAME) $($user.L_NAME)"
+                Write-Host "Updated name: $($user.F_NAME) $($user.L_NAME)"
             }
         }
         catch {
-            Write-Host "❌ Error for $($user.EMAIL): $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "Error for $($user.EMAIL): $($_.Exception.Message)" -ForegroundColor Red
         }
     }
 
     # Move processed file
     Move-Item -Path $csvFile -Destination (Join-Path $processedFolder $fileName)
-    Write-Host "📁 Moved $fileName to processed folder." -ForegroundColor Cyan
+    Write-Host "Moved $fileName to processed folder." -ForegroundColor Cyan
 }
 
-Write-Host "`n✅ All files processed." -ForegroundColor Green
+Write-Host "`nAll files processed." -ForegroundColor Green
