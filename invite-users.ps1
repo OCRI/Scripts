@@ -1,6 +1,5 @@
 #TODO 
 #Check to make sure latest version of powershell is installed
-#Delete Completed XLSX after converstion to csv or store them somewhere
 #Validate that there is data in columns
 #Move invalid CSVs to rejected folder
 
