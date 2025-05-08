@@ -40,9 +40,16 @@ Get-ChildItem -Path $inputFolder -Filter *.xlsx | ForEach-Object {
     # Load CSV and rename column
     $csvContent = Import-Csv $csvPath
     $renamedContent = $csvContent | Select-Object @{Name='EMAIL'; Expression={ $_.'EMAIL ADDRESS for ACCESS (required)' }}, * -ExcludeProperty 'EMAIL ADDRESS for ACCESS (required)'
+    $updatedData = $renamedContent | ForEach-Object {
+        # Split the "LAST NAME, FIRST NAME" column
+        $nameParts = $_.'LAST NAME, FIRST NAME' -split ',\s*'
+        $_ | Add-Member -NotePropertyName 'L_NAME' -NotePropertyValue $nameParts[0] -Force
+        $_ | Add-Member -NotePropertyName 'F_NAME' -NotePropertyValue $nameParts[1] -Force
+        $_
+    }
 
     # Save back to CSV
-    $renamedContent | Export-Csv -Path $csvPath -NoTypeInformation
+    $updatedData | Export-Csv -Path $csvPath -NoTypeInformation
     Write-Host "Renamed header in: $csvPath"
 }
 
