@@ -1,6 +1,27 @@
+#TODO 
+#Check to make sure latest version of powershell is installed
+#Delete Completed XLSX after converstion to csv or store them somewhere
+#Validate Correct Headers
+#Validate that there is data in columns
+#Move invalid CSVs to rejected folder
+
 # Define folders
 $inputFolder = "C:\Users\Public\Documents\Class Rosters\2025\Inbound"
 $processedFolder = "C:\Users\Public\Documents\Class Rosters\2025\Complete"
+
+# Ensure processed folder exists
+if (-not (Test-Path -Path $processedFolder)) {
+    Write-Host "Processed folder doesn't exist you donkey"
+}
+
+# Check if the Microsoft.Graph module is available
+if (-not (Get-Module -ListAvailable -Name Microsoft.Graph)) {
+    Write-Host "Microsoft.Graph module not found. Installing..."
+    Install-Module -Name Microsoft.Graph -Scope CurrentUser -Force
+}
+
+
+Connect-MgGraph -Scopes "User.Invite.All"
 
 # Requires Excel COM object (Excel must be installed)
 $excel = New-Object -ComObject Excel.Application
@@ -14,6 +35,13 @@ Get-ChildItem -Path $inputFolder -Filter *.xlsx | ForEach-Object {
     $workbook.SaveAs($csvPath, 6)  # 6 = xlCSV
     $workbook.Close($false)
     Write-Host "Converted $($_.Name) to CSV."
+    # Load CSV and rename column
+    $csvContent = Import-Csv $csvPath
+    $renamedContent = $csvContent | Select-Object @{Name='EMAIL'; Expression={ $_.'EMAIL ADDRESS for ACCESS (required)' }}, * -ExcludeProperty 'EMAIL ADDRESS for ACCESS (required)'
+
+    # Save back to CSV
+    $renamedContent | Export-Csv -Path $csvPath -NoTypeInformation
+    Write-Host "Renamed header in: $csvPath"
 }
 
 $excel.Quit()
@@ -21,21 +49,7 @@ $excel.Quit()
 [GC]::Collect()
 [GC]::WaitForPendingFinalizers()
 
-# Ensure processed folder exists
-if (-not (Test-Path -Path $processedFolder)) {
-    Write-Host "Processed folder doesn't exist you donkey"
-}
 
-# Check if the Microsoft.Graph module is available
-if (-not (Get-Module -ListAvailable -Name Microsoft.Graph)) {
-    Write-Host "Microsoft.Graph module not found. Installing..."
-    Install-Module -Name Microsoft.Graph -Scope CurrentUser -Force
-}
-
-# Import the module (just in case it's not auto-loaded)
-Import-Module Microsoft.Graph
-
-Connect-MgGraph -Scopes "User.Invite.All"
 
 
 $redirectUrl = "https://ocr.uc.edu"
