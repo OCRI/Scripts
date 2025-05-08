@@ -6,8 +6,8 @@
 #Move invalid CSVs to rejected folder
 
 # Define folders
-$requiredColumns = @("L_NAME, F_NAME", "EMAIL")
-$rejectedFolder = "C:\Users\Public\Documents\Class Rosters\2025\Inbound"
+$requiredColumns = @("L_NAME", "F_NAME", "EMAIL")
+$rejectedFolder = "C:\Users\Public\Documents\Class Rosters\2025\Rejected"
 $inputFolder = "C:\Users\Public\Documents\Class Rosters\2025\Inbound"
 $processedFolder = "C:\Users\Public\Documents\Class Rosters\2025\Complete"
 
