@@ -1,7 +1,6 @@
 #TODO 
 #Check to make sure latest version of powershell is installed
 #Delete Completed XLSX after converstion to csv or store them somewhere
-#Validate Correct Headers
 #Validate that there is data in columns
 #Move invalid CSVs to rejected folder
 
@@ -10,6 +9,7 @@ $requiredColumns = @("L_NAME", "F_NAME", "EMAIL")
 $rejectedFolder = "C:\Users\Public\Documents\Class Rosters\2025\Rejected"
 $inputFolder = "C:\Users\Public\Documents\Class Rosters\2025\Inbound"
 $processedFolder = "C:\Users\Public\Documents\Class Rosters\2025\Complete"
+$historicalFolder = "C:\Users\Public\Documents\Clas Rosters\2025\Historical"
 
 # Ensure processed folder exists
 if (-not (Test-Path -Path $processedFolder)) {
@@ -37,6 +37,8 @@ Get-ChildItem -Path $inputFolder -Filter *.xlsx | ForEach-Object {
     $workbook.SaveAs($csvPath, 6)  # 6 = xlCSV
     $workbook.Close($false)
     Write-Host "Converted $($_.Name) to CSV."
+    #Move orginal XLSX file
+    Move-Item -Path $workbook -Destination (Join-Path $HistoricalFolder $workbook)
     # Load CSV and rename column
     $csvContent = Import-Csv $csvPath
     $renamedContent = $csvContent | Select-Object @{Name='EMAIL'; Expression={ $_.'EMAIL ADDRESS for ACCESS (required)' }}, * -ExcludeProperty 'EMAIL ADDRESS for ACCESS (required)'
@@ -51,6 +53,7 @@ Get-ChildItem -Path $inputFolder -Filter *.xlsx | ForEach-Object {
     # Save back to CSV
     $updatedData | Export-Csv -Path $csvPath -NoTypeInformation
     Write-Host "Renamed header in: $csvPath"
+
 }
 
 $excel.Quit()
