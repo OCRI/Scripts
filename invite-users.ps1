@@ -38,7 +38,7 @@ Get-ChildItem -Path $inputFolder -Filter *.xlsx | ForEach-Object {
     $workbook.Close($false)
     Write-Host "Converted $($_.Name) to CSV."
     #Move orginal XLSX file
-    Move-Item -Path $workbook -Destination (Join-Path $HistoricalFolder $workbook)
+    #Move-Item -Path $workbook -Destination (Join-Path $HistoricalFolder $workbook)
     # Load CSV and rename column
     $csvContent = Import-Csv $csvPath
     $renamedContent = $csvContent | Select-Object @{Name='EMAIL'; Expression={ $_.'EMAIL ADDRESS for ACCESS (required)' }}, * -ExcludeProperty 'EMAIL ADDRESS for ACCESS (required)'
