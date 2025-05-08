@@ -6,6 +6,8 @@
 #Move invalid CSVs to rejected folder
 
 # Define folders
+$requiredColumns = @("L_NAME, F_NAME", "EMAIL")
+$rejectedFolder = "C:\Users\Public\Documents\Class Rosters\2025\Inbound"
 $inputFolder = "C:\Users\Public\Documents\Class Rosters\2025\Inbound"
 $processedFolder = "C:\Users\Public\Documents\Class Rosters\2025\Complete"
 
@@ -62,6 +64,15 @@ Get-ChildItem -Path $inputFolder -Filter *.csv | ForEach-Object {
     Write-Host "Processing $fileName..."
 
     $users = Import-Csv $csvFile
+
+    # Validate required columns
+    $missingColumns = $requiredColumns | Where-Object { $_ -notin $users[0].PSObject.Properties.Name }
+    if ($missingColumns.Count -gt 0) {
+        Write-Host "Missing columns in $fileName $($missingColumns -join ', ')" -ForegroundColor Red
+        Move-Item -Path $csvFile -Destination (Join-Path $rejectedFolder $fileName)
+        Write-Host "Moved to rejected folder: $fileName" -ForegroundColor DarkYellow
+        return  # Skip further processing for this file
+    }
 
     foreach ($user in $users) {
         try {
