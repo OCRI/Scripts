@@ -93,6 +93,7 @@ Get-ChildItem -Path $inputFolder -Filter *.csv | ForEach-Object {
             }
 
             # Step 2: Send invite
+        
             $invite = New-MgInvitation -InvitedUserEmailAddress $user.EMAIL `
                                        -InvitedUserDisplayName "$($user.F_NAME) $($user.L_NAME)" `
                                        -InviteRedirectUrl $redirectUrl `
