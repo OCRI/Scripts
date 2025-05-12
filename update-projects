@@ -1,0 +1,28 @@
+$inputFolder = "C:\Users\Public\Documents\Class Rosters\2025\Complete"
+
+# Check if the Microsoft.Graph module is available
+if (-not (Get-Module -ListAvailable -Name Microsoft.Graph)) {
+    Write-Host "Microsoft.Graph module not found. Installing..."
+    Install-Module -Name Microsoft.Graph -Scope CurrentUser -Force
+}
+
+#Connect to Entra ID
+Connect-MgGraph -Scopes "User.Invite.All"
+
+Get-ChildItem -Path $inputFolder -Filter *.csv | ForEach-Object {
+
+    $csvFile = $_.FullName
+    $fileName = $_.Name
+    Write-Host "Processing $fileName..."
+
+    $users = Import-Csv $csvFile
+
+    foreach ($user in $users) {
+
+        Get-MgUser -Filter "Mail eq '$($user.EMAIL)'" -Property mail, externalUserState | select mail, ExternalUserState
+
+
+    }
+
+}
+
